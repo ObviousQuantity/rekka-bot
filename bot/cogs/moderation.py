@@ -16,6 +16,11 @@ class Moderation(commands.Cog):
     def __init__(self,client):
         self.client = client
 
+    @commands.command()
+    async def test(self,ctx):
+        await ctx.send("test")
+
+
     #Add words to the filter
     @commands.guild_only()
     @commands.command()
