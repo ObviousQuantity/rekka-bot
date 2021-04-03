@@ -1,0 +1,81 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>f190905e-00a7-4594-bf24-d98d8a62e582</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>bot\main.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>Rekka</Name>
+    <RootNamespace>Rekka</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="bot\bot.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\error_handler.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\fun.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\giveaway.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\logs.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\moderation.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\cogs\music.py" />
+    <Compile Include="bot\cogs\utility.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="launcher.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bot\" />
+    <Folder Include="bot\cogs\" />
+    <Folder Include="data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="data\server_settings.json">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="data\token.0">
+      <SubType>Code</SubType>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
