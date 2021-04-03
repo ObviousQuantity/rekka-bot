@@ -41,12 +41,13 @@ async def on_ready():
     print("Bot is in " + str(len(bot.guilds)) + " server(s)")
     print("--------------------")
 
-    for cog in cogs:
-        try:
-            bot.load_extension(f"cogs.{cog}")
-            print(f" {cog} Loaded")
-        except:
-            print(f"Failed to load {cog}")
+    for cog in os.listdir("./bot/cogs"):
+        if cog.endswith(".py"):
+            try:
+                bot.load_extension(f"cogs.{cog[:-3]}")
+                print(f" {cog} Loaded")
+            except:
+                print(f"Failed to load {cog}")
 
     # Setting `Playing ` status
     await bot.change_presence(activity=discord.Game(name="Testing"))
