@@ -143,8 +143,6 @@ async def on_message(message):
     if not message.author.bot:
         if isinstance(message.channel,DMChannel):
 
-            for guild in bot.guilds:
-                await ctx.send("**Server Name:** " + guild.name + "\n**ID:** " + str(guild.id))
 
             #if message.content.startswith("?request"):
             try:
@@ -153,7 +151,14 @@ async def on_message(message):
                 text = message.content.split(server_name)
                 user_request = text[1]
             except:
-                await message.channel.send("Invalid Usage! Syntax: <serverID> <message>")
+                embed = Embed(title = "Modmail",
+                             colour = 0x3498db,
+                             description = "Please respond with the **ID** of the server you want to send a ticket too along with your **message**. <ID> <Message>")
+
+                for guild in bot.guilds:
+                    embed.add_field(name=guild.name, value="ID: "+str(guild.id), inline=True)
+
+                await ctx.send(embed=embed)
                 return
 
             json_file = open("./data/server_settings.json").read()
