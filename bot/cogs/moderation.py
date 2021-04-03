@@ -20,7 +20,6 @@ class Moderation(commands.Cog):
     async def test(self,ctx):
         await ctx.send("test")
 
-
     #Add words to the filter
     @commands.guild_only()
     @commands.command()

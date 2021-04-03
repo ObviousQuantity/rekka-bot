@@ -129,7 +129,6 @@ async def on_member_remove(member):
 async def on_message(message):
     ctx = await bot.get_context(message)
     """
-
     url_regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 
     if search(url_regex,message.content):
@@ -143,6 +142,9 @@ async def on_message(message):
 
     if not message.author.bot:
         if isinstance(message.channel,DMChannel):
+
+            for guild in bot.guilds:
+                await ctx.send("**Server Name:** " + guild.name + "\n**ID:** " + str(guild.id))
 
             #if message.content.startswith("?request"):
             try:
