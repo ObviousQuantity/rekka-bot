@@ -62,6 +62,8 @@ class InvalidVoiceChannel(VoiceConnectionError):
 
 class YTDLSource(discord.PCMVolumeTransformer):
 
+    discord.opus.load_opus()
+
     def __init__(self, source, *, data, requester):
         super().__init__(source)
         self.requester = requester
@@ -121,6 +123,8 @@ class MusicPlayer:
 
     When the bot disconnects from the Voice it's instance will be destroyed.
     """
+
+    discord.opus.load_opus()
 
     __slots__ = ('bot', '_guild', '_channel', '_cog', 'queue', 'next', 'current', 'np', 'volume')
 
@@ -188,6 +192,9 @@ class MusicPlayer:
 
 class Music(commands.Cog):
     """Music related commands."""
+
+    print("LOADING DISCORD OPUS")
+    discord.opus.load_opus()
 
     __slots__ = ('bot', 'players')
 
