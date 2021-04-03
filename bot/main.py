@@ -40,7 +40,7 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     print("Bot is in " + str(len(bot.guilds)) + " server(s)")
     print("--------------------")
-
+   
     for cog in os.listdir("./bot/cogs"):
         if cog.endswith(".py"):
             try:
@@ -49,8 +49,9 @@ async def on_ready():
             except:
                 print(f"Failed to load {cog}")
 
+    #Statuses
     # Setting `Playing ` status
-    await bot.change_presence(activity=discord.Game(name="Testing"))
+    await bot.change_presence(activity=discord.Game(name="Message me for modmail!"))
 
     # Setting `Streaming ` status
     #await bot.change_presence(activity=discord.Streaming(name="My Stream", url="https://www.twitch.tv/jardius"))
