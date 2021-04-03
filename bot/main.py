@@ -1,6 +1,5 @@
 import discord
 import json
-from dotenv import load_dotenv
 import os
 from discord.ext import commands, tasks
 from discord import Intents, DMChannel
