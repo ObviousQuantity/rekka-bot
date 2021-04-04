@@ -104,6 +104,10 @@ async def on_reaction_add(reaction,user):
 
 @bot.event
 async def on_member_join(member):
+    if member.bot:
+        print("Bot Joined")
+        return
+
     print("Member Joined")
 
     #await member.add_roles(*(member.guild.get_role(id_) for id_ in ()))
@@ -122,6 +126,10 @@ async def on_member_join(member):
 
 @bot.event
 async def on_member_remove(member):
+    if member.bot:
+        print("Bot Left")
+        return
+
     print("Member Left")
     await bot.get_channel(826874741444050953).send(f"{member} left!")
 

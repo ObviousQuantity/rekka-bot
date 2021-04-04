@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\bot",
-    "\\bot\\cogs"
+    "\\bot\\cogs",
+    "\\data"
   ],
-  "SelectedNode": "\\requirements.txt",
+  "SelectedNode": "\\bot\\cogs\\music.py",
   "PreviewInSolutionExplorer": false
 }

@@ -164,8 +164,13 @@ class Utility(commands.Cog):
             return
         except:
             try:
-                modmail_channel = await ctx.message.guild.create_text_channel("modmail")
-                servers[str(server_id)]["modmail_channel_id"] = str(modmail_channel.id)
+                if discord.utils.get(ctx.channels,name="modmail"):
+                    channel = discord.utils.get(self.client.channels,name="modmail")
+                    channel_id = channel.id
+                    servers[str(server_id)]["modmail_channel_id"] = str(channel_id)
+                else:
+                    modmail_channel = await ctx.message.guild.create_text_channel("modmail")
+                    servers[str(server_id)]["modmail_channel_id"] = str(modmail_channel.id)
             except discord.Forbidden:
                 await ctx.send("Missing Permissions to create channels!")
                 ctx.send("Missing Permissions to create channels!")
@@ -198,8 +203,13 @@ class Utility(commands.Cog):
             return
         except:
             try:
-                logs_channel = await ctx.message.guild.create_text_channel("logs")
-                servers[str(server_id)]["logs_channel"] = str(logs_channel.id)
+                if discord.utils.get(ctx.channels,name="logs"):
+                    channel = discord.utils.get(self.client.channels,name="logs")
+                    channel_id = channel.id
+                    servers[str(server_id)]["modmail_channel_id"] = str(channel_id)
+                else:
+                    logs_channel = await ctx.message.guild.create_text_channel("logs")
+                    servers[str(server_id)]["logs_channel"] = str(logs_channel.id)
             except discord.Forbidden:
                 await ctx.send("Missing Permissions to create channels!")
                 ctx.send("Missing Permissions to create channels!")
