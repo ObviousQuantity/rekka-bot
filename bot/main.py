@@ -64,7 +64,7 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-    print("Bot Joined A Server")
+    print("Rekka Joined A Server")
 
     channels = guild.text_channels
 
@@ -82,6 +82,11 @@ async def on_guild_join(guild):
     settings[guild.id]["filter"] = []
     settings[guild.id]["logs_channel"] = ""
     settings[guild.id]["modmail_channel"] = ""
+    settings[guild.id]["welcome_message"] = []
+    settings[guild.id]["goodbye_message"] = []
+    settings[guild.id]["join_roles"] = []
+    settings[guild.id]["welcome_channel"] = ""
+    settings[guild.id]["goodbye_channel"] = ""
     
     with open("./data/server_settings.json","w") as f:
         json.dump(settings,f,indent=4)
@@ -104,34 +109,89 @@ async def on_reaction_add(reaction,user):
 
 @bot.event
 async def on_member_join(member):
-    if member.bot:
-        print("Bot Joined")
-        return
-
     print("Member Joined")
 
-    #await member.add_roles(*(member.guild.get_role(id_) for id_ in ()))
+    server_id = str(member.guild.id)
 
-    #Add Roles
-    role = discord.utils.get(member.guild.roles,name="Temp")
-    if role:
-        try:
-            await member.add_roles(role)
-        except discord.Forbidden:
-            pass
-    else:
-        pass
+    if member != bot:
 
-    await bot.get_channel(826874723509075978).send(f"Welcome {member.mention}!")
+        with open("./data/server_settings.json","r") as f:
+            settings = json.load(f)
+
+        #Welcome Message
+        #Check if welcome_channel is in the setting json for the server
+        #Then check if it doesn't equal ""
+        #Then check if welcome_message is in the setting json for the server
+        #Then check if the list doesn't equal 0
+        #Then randomly select a welcome message from the list to send
+        if "welcome_channel" in settings[server_id]:
+            if settings[server_id]["welcome_channel"] != "":
+                welcome_channel = int(settings[server_id]["welcome_channel"])
+
+                if "welcome_message" in settings[server_id]:
+                    if len(settings[guild.id]["welcome_message"]) != 0:
+                        welcome__message = choice(settings[guild.id]["welcome_message"])
+                        await bot.get_channel(server_id).send(f"{welcome__message}")
+                else:
+                    print("Server doesn't have welcome_message in settings json")
+                    settings[guild.id]["welcome_message"] = []
+        else:
+            print("Server doesn't have welcome_channel in settings json")
+            settings[server_id]["welcome_channel"] = ""
+
+        #Auto Role
+        #Check if join_roles is in the settings json for the server
+        #Then check if it doesn't equal 0
+        #Then for each role in the list add it to the player
+        if "join_roles" in settings[server_id]:
+            if len(settings[server_id]["join_roles"]) != 0:
+                for role_name in settings[server_id]["join_roles"]:
+                    try:
+                        role = discord.utils.get(member.guild.roles,name=role_name)
+                        await member.add_roles(role)
+                    except:
+                        print("Couldn't Get Role / Couldn't Add Role")
+        else:
+            print("Server doesn't have join_roles in settings json")
+            settings[server_id]["join_roles"] = []
+
+        with open("./data/server_settings.json","w") as f:
+            json.dump(settings,f,indent=4)
 
 @bot.event
 async def on_member_remove(member):
-    if member.bot:
-        print("Bot Left")
-        return
-
     print("Member Left")
-    await bot.get_channel(826874741444050953).send(f"{member} left!")
+
+    server_id = str(member.guild.id)
+
+    if member != bot:
+
+        with open("./data/server_settings.json","r") as f:
+            settings = json.load(f)
+
+        #Welcome Message
+        #Check if welcome_channel is in the setting json for the server
+        #Then check if it doesn't equal ""
+        #Then check if welcome_message is in the setting json for the server
+        #Then check if the list doesn't equal 0
+        #Then randomly select a welcome message from the list to send
+        if "goodbye_channel" in settings[server_id]:
+            if settings[server_id]["goodbye_channel"] != "":
+                welcome_channel = int(settings[server_id]["goodbye_channel"])
+
+                if "goodbye_message" in settings[server_id]:
+                    if len(settings[guild.id]["goodbye_message"]) != 0:
+                        goodbye_message = choice(settings[guild.id]["goodbye_message"])
+                        await bot.get_channel(server_id).send(f"{goodbye_message}")
+                else:
+                    print("Server doesn't goodbye_message in settings json")
+                    settings[server_id]["goodbye_message"] = []
+        else:
+            print("Server doesn't have goodbye_channel in settings json")
+            settings[server_id]["goodbye_channel"] = ""
+
+        with open("./data/server_settings.json","w") as f:
+            json.dump(settings,f,indent=4)
 
 @bot.event
 async def on_message(message):

@@ -164,7 +164,7 @@ class Utility(commands.Cog):
             return
         except:
             try:
-                if discord.utils.get(ctx.channels,name="modmail"):
+                if discord.utils.get(ctx.guild.channels,name="modmail"):
                     channel = discord.utils.get(self.client.channels,name="modmail")
                     channel_id = channel.id
                     servers[str(server_id)]["modmail_channel_id"] = str(channel_id)
@@ -203,7 +203,7 @@ class Utility(commands.Cog):
             return
         except:
             try:
-                if discord.utils.get(ctx.channels,name="logs"):
+                if discord.utils.get(ctx.guild.channels,name="logs"):
                     channel = discord.utils.get(self.client.channels,name="logs")
                     channel_id = channel.id
                     servers[str(server_id)]["modmail_channel_id"] = str(channel_id)

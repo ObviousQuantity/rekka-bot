@@ -132,6 +132,9 @@ class Moderation(commands.Cog):
     async def kick(self,ctx,targets: Greedy[Member],*,reason: Optional[str] = "No reason provided"):
 
         if not len(targets):
+            embed=discord.Embed()
+            embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna kick", inline=False)
+            await ctx.send(embed=embed,delete_after=5)
             return
 
         else:
@@ -152,8 +155,20 @@ class Moderation(commands.Cog):
 
                     for name,value,inline in fields:
                         embed.add_field(name = name, value = value, inline = inline)
-
-                    await ctx.send(embed = embed)
+                    
+                    with open("./data/server_settings.json","r") as f:
+                        settings = json.load(f)
+                    
+                    if "logs_channel" in settings[str(ctx.guild.id)]:
+                        if settings[str(ctx.guild.id)]["logs_channel"] != "":
+                            log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
+                            try:
+                                channel = await self.client.fetch_channel(log_channel_id)
+                                await channel.send(embed=embed)
+                            except:
+                                pass
+                        else:
+                            await ctx.send(embed=embed)
 
                 else:
                     await ctx.send(f"{target.display_name} could not be kicked")
@@ -167,6 +182,9 @@ class Moderation(commands.Cog):
         mute_role = discord.utils.get(ctx.guild.roles,name="mute")
 
         if not len(targets):
+            embed=discord.Embed()
+            embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna mute", inline=False)
+            await ctx.send(embed=embed,delete_after=5)
             return
 
         else:
@@ -209,7 +227,19 @@ class Moderation(commands.Cog):
                         for name,value,inline in fields:
                             embed.add_field(name=name,value=value,inline=inline)
 
-                        await ctx.send(embed=embed)
+                        with open("./data/server_settings.json","r") as f:
+                            settings = json.load(f)
+
+                        if "logs_channel" in settings[str(ctx.guild.id)]:
+                            if settings[str(ctx.guild.id)]["logs_channel"] != "":
+                                log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
+                                try:
+                                    channel = await self.client.fetch_channel(log_channel_id)
+                                    await channel.send(embed=embed)
+                                except:
+                                    pass
+                            else:
+                                await ctx.send(embed=embed)
 
                         if hours:
                             unmutes.append(target)
@@ -218,14 +248,11 @@ class Moderation(commands.Cog):
                 else:
                     await ctx.send(f"{target.display_name} is already muted")
 
-            await ctx.send("Action complete")
-
             if len(unmutes):
                 await asyncio.sleep(hours)
                 await self.unmute(ctx,targets)
 
     async def unmute(self,ctx,targets):
-        print("UNMUTE")
         mute_role = discord.utils.get(ctx.guild.roles,name="mute")
         for target in targets:
             if mute_role in target.roles:
@@ -251,6 +278,9 @@ class Moderation(commands.Cog):
     async def ban(self,ctx,targets: Greedy[Member],*,reason: Optional[str] = "No reason provided"):
 
         if not len(targets):
+            embed=discord.Embed()
+            embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna ban", inline=False)
+            await ctx.send(embed=embed,delete_after=5)
             return
 
         else:
@@ -272,7 +302,19 @@ class Moderation(commands.Cog):
                     for name,value,inline in fields:
                         embed.add_field(name = name, value = value, inline = inline)
 
-                    await ctx.send(embed = embed)
+                    with open("./data/server_settings.json","r") as f:
+                        settings = json.load(f)
+                    
+                    if "logs_channel" in settings[str(ctx.guild.id)]:
+                        if settings[str(ctx.guild.id)]["logs_channel"] != "":
+                            log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
+                            try:
+                                channel = await self.client.fetch_channel(log_channel_id)
+                                await channel.send(embed=embed)
+                            except:
+                                pass
+                        else:
+                            await ctx.send(embed=embed)
 
                 else:
                     await ctx.send(f"{target.display_name} could not be banned")
@@ -292,9 +334,7 @@ class Moderation(commands.Cog):
                    await ctx.guild.unban(user)
                    await ctx.send(f"Unbanned {user.mention}")
                    return
-
-
-        
+      
 def setup(client):
    client.add_cog(Moderation(client))
 

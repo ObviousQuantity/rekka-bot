@@ -17,11 +17,14 @@
         ],
         "modmail_channel_id": "825009826450505759"
     },
-    "828072541343449139": {
+    "828109813606252575": {
         "prefix": ".",
         "filter": [],
-        "logs_channel": "828103168205520916",
+        "logs_channel": "828289434058358853",
         "modmail_channel": "",
-        "modmail_channel_id": "828103055739322380"
+        "modmail_channel_id": "828103055739322380",
+        "goodbye_channel": "",
+        "welcome_channel": "",
+        "join_roles": []
     }
 }
