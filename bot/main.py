@@ -74,7 +74,7 @@ async def on_guild_join(guild):
     else:
        await choice(channels).send("Thanks for inviting me")
 
-    with open("./utils/Server Settings.json","r") as f:
+    with open("./data/server_settings.json","r") as f:
         settings = json.load(f)
 
     settings[guild.id] = {}
