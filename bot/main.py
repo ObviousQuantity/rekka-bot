@@ -143,7 +143,6 @@ async def on_message(message):
     if not message.author.bot:
         if isinstance(message.channel,DMChannel):
 
-
             #if message.content.startswith("?request"):
             try:
                 server_name = message.content.split()[0] #this gets the server name the user specified and saves it in a variable

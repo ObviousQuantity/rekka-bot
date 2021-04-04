@@ -16,5 +16,12 @@
             "nigger"
         ],
         "modmail_channel_id": "825009826450505759"
+    },
+    "828072541343449139": {
+        "prefix": ".",
+        "filter": [],
+        "logs_channel": "828103168205520916",
+        "modmail_channel": "",
+        "modmail_channel_id": "828103055739322380"
     }
 }

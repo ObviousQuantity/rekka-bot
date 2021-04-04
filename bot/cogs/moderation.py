@@ -16,13 +16,11 @@ class Moderation(commands.Cog):
     def __init__(self,client):
         self.client = client
 
-    @commands.command()
-    async def test(self,ctx):
-        await ctx.send("test")
-
     #Add words to the filter
     @commands.guild_only()
-    @commands.command()
+    @commands.command(name = "addword",
+                      brief = "add a word from the filter",
+                      aliases = ["aw"])
     @commands.has_permissions(manage_messages=True)
     async def addword(self,ctx,*,word):
         with open("./data/server_settings.json","r") as f:
@@ -38,8 +36,11 @@ class Moderation(commands.Cog):
             json.dump(filter,f,indent=4)
 
     #Remove words from the filter
-    @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
+    @commands.command(name = "removeword",
+                      brief = "remove a word from the filter",
+                      aliases = ["rw"])
     async def removeword(self,ctx,*,word):
         with open("./data/server_settings.json","r") as f:
             filter = json.load(f)
@@ -54,7 +55,11 @@ class Moderation(commands.Cog):
             json.dump(filter,f,indent=4)
 
     #View Filter
-    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    @commands.command(name = "viewfilter",
+                      brief = "view the words being filtered",
+                      aliases = ["filter","f","vf"])
     async def viewfilter(self,ctx):
 
         with open("./data/server_settings.json","r") as f:
@@ -64,7 +69,7 @@ class Moderation(commands.Cog):
 
         try:
             embed = Embed(title = "Filter",
-                          colour = ctx.guild.owner.colour)
+                          colour = ctx.member.colour)
 
             fields  = [("Current Words Being Filtered",'\n'.join(FilteredWords),False)]
 
@@ -73,16 +78,20 @@ class Moderation(commands.Cog):
 
             await ctx.send(embed=embed)
         except:
-            await ctx.send("Couldnt get filter")
+                embed=discord.Embed()
+                embed.add_field(name="❌ Couldn't Get Filter", value=f"something went wrong or the list is empty. Use the **addword** command to filter a word", inline=False)
+                await ctx.send(embed=embed)
 
         with open("./data/server_settings.json","w") as f:
             json.dump(filter,f,indent=4)
 
     #Clear/Purge
+    @commands.guild_only()
     @commands.command(name = "clear", aliases = ["purge"], help = "deletes messages")
     @commands.bot_has_permissions(manage_messages = True)
     @commands.has_permissions(manage_messages = True)
     async def clear_messages(self,ctx,targets: Greedy[Member],limit: int = 1):
+
         def _check(message):
             return not len(targets) or message.author in targets
 
@@ -96,6 +105,7 @@ class Moderation(commands.Cog):
             await ctx.send("The limit provided is not within acceptable bounds")
 
     #Nuke
+    @commands.guild_only()
     @commands.command(name = "nuke",help = "deletes the chanel and readds it")
     @commands.has_permissions(manage_messages=True)
     async def nuke(self, ctx, channel: discord.TextChannel = None):
@@ -115,12 +125,15 @@ class Moderation(commands.Cog):
             await ctx.send(f"No channel named {channel.name} was found!")
 
     #Kick
+    @commands.guild_only()
     @command(name = "kick")
     @bot_has_permissions(kick_members = True)
     @has_permissions(kick_members = True)
     async def kick(self,ctx,targets: Greedy[Member],*,reason: Optional[str] = "No reason provided"):
+
         if not len(targets):
-            await ctx.send("One or more required arguments are missing")
+            return
+
         else:
             for target in targets:
                 #Checks if the role of the bot is higher and make sure the target is not an admin
@@ -146,6 +159,7 @@ class Moderation(commands.Cog):
                     await ctx.send(f"{target.display_name} could not be kicked")
 
     #Mute
+    @commands.guild_only()
     @command(name = "mute")
     @bot_has_permissions(manage_roles = True)
     @has_permissions(manage_roles = True,manage_guild = True)
@@ -153,7 +167,7 @@ class Moderation(commands.Cog):
         mute_role = discord.utils.get(ctx.guild.roles,name="mute")
 
         if not len(targets):
-            await ctx.send("One or more required arguments are missing")
+            return
 
         else:
 
@@ -218,23 +232,27 @@ class Moderation(commands.Cog):
                 await target.remove_roles(mute_role)
 
     #Unmute
+    @commands.guild_only()
     @command(name = "unmute")
     @bot_has_permissions(manage_roles = True)
     @has_permissions(manage_roles = True,manage_guild = True)
     async def unmute_command(self,ctx,targets:Greedy[Member]):
         if not len(targets):
-            await ctx.send("One or more required arguments is missing")
+            return
 
         else:
             await self.unmute(ctx,targets)
 
     #Ban
+    @commands.guild_only()
     @command(name = "ban")
     @bot_has_permissions(ban_members = True)
     @has_permissions(ban_members = True)
     async def ban(self,ctx,targets: Greedy[Member],*,reason: Optional[str] = "No reason provided"):
+
         if not len(targets):
-            await ctx.send("One or more required arguments are missing")
+            return
+
         else:
             for target in targets:
                 #Checks if the role of the bot is higher and make sure the target is not an admin
@@ -260,6 +278,7 @@ class Moderation(commands.Cog):
                     await ctx.send(f"{target.display_name} could not be banned")
 
     #Unban
+    @commands.guild_only()
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def unban(self,ctx,*,member:discord.Member):
