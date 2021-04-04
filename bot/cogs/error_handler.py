@@ -12,7 +12,6 @@ import traceback
 import sys
 from discord.ext import commands
 
-
 class CommandErrorHandler(commands.Cog):
 
     def __init__(self, bot):
@@ -50,25 +49,35 @@ class CommandErrorHandler(commands.Cog):
             return
 
         if isinstance(error, commands.DisabledCommand):
-            await ctx.send(f'{ctx.command} has been disabled.')
+            embed=discord.Embed()
+            embed.add_field(name="❌ Disabled Command", value=f"❌ {ctx.command} has been disabled", inline=False)
+            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.NoPrivateMessage):
             try:
-                await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+                embed=discord.Embed()
+                embed.add_field(name="❌ No Private Message", value=f"❌ {ctx.command} can not be used in Private Messages.", inline=False)
+                await ctx.send(embed=embed)
             except discord.HTTPException:
                 pass
 
         elif isinstance(error,commands.BotMissingPermissions):
-            await ctx.send("I don't have permission to do this")
+                embed=discord.Embed()
+                embed.add_field(name="❌ Missing Permissions", value=f"I don't have permission to do this", inline=False)
+                await ctx.send(embed=embed)
 
         elif isinstance(error, commands.MissingPermissions):
             try:
-                await ctx.send("You don't have permission to use that command")
+                embed=discord.Embed()
+                embed.add_field(name="❌ Missing Permissions", value=f"you don't have permission to do this", inline=False)
+                await ctx.send(embed=embed)
             except discord.HTTPException:
                 pass
 
         elif isinstance(error, commands.MissingRequiredArgument):
-                await ctx.send("Missing arguments")
+                embed=discord.Embed()
+                embed.add_field(name="❌ Missing Arguments", value=f"you're missing arguments for this command check if you used it correctly", inline=False)
+                await ctx.send(embed=embed)
 
         # For this error example we check to see where it came from...
         elif isinstance(error, commands.BadArgument):
@@ -80,7 +89,7 @@ class CommandErrorHandler(commands.Cog):
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     """Below is an example of a Local Error Handler for our command do_repeat"""
-
+    """
     @commands.command(name='repeat', aliases=['mimic', 'copy'])
     async def do_repeat(self, ctx, *, inp: str):
         """A simple command which repeats your input!
@@ -102,6 +111,7 @@ class CommandErrorHandler(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             if error.param.name == 'inp':
                 await ctx.send("You forgot to give me input to repeat!")
+    """
 
 
 def setup(bot):
