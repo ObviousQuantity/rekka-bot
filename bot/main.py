@@ -195,7 +195,13 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message(message):
+
     ctx = await bot.get_context(message)
+
+    def check(msg):
+        return (msg.author == message.author
+                and (datetime.utcnow()-msg.created_at).seconds < 10)    
+
     """
     url_regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 
@@ -209,6 +215,10 @@ async def on_message(message):
     """
 
     if not message.author.bot:
+
+        if len(list(filter(lambda m: check(m),bot.cached_messages))) >= 6: 
+               await message.channel.send("Don't spam!",delete_after=5)
+
         if isinstance(message.channel,DMChannel):
 
             #if message.content.startswith("?request"):
@@ -260,9 +270,9 @@ async def on_message(message):
                     if not str(ctx.command) == "addword":
                         if message.guild:
                             with open("./data/server_settings.json","r") as f:
-                                filter = json.load(f)
+                                settings = json.load(f)
 
-                            bad_words = filter[str(message.guild.id)]["filter"]
+                            bad_words = settings[str(message.guild.id)]["filter"]
                             if not bad_words == 0:
                                 for word in bad_words:
                                     if message.content.count(word) > 0:
@@ -274,7 +284,7 @@ async def on_message(message):
                                         return
 
                             with open("./data/server_settings.json","w") as f:
-                                json.dump(filter,f,indent=4)
+                                json.dump(settings,f,indent=4)
 
     await bot.process_commands(message)
 

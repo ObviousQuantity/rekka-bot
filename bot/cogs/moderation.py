@@ -173,12 +173,71 @@ class Moderation(commands.Cog):
                 else:
                     await ctx.send(f"{target.display_name} could not be kicked")
 
+    #Mute Functions
+    async def mute_members(self,message,targets,hours,reason):
+
+        mute_role = discord.utils.get(message.guild.roles,name="mute")
+        #Check if the mute role exisits
+        if not mute_role:
+            try:
+                mute_role = await message.guild.create_role(name="mute")
+
+                for channel in message.guild.channels:
+                    await channel.set_permissions(mute_role,speak=False,send_messages=False,
+                                                   read_message_history=True,read_messages=False)
+
+            except discord.Forbidden:
+                return
+
+        unmutes = []
+
+        for target in targets:
+            if not mute_role in target.roles:
+                if message.guild.me.top_role.position > target.top_role.position:
+                    role_ids = ",".join([str(r.id) for r in target.roles])
+                    end_time = datetime.utcnow() + timedelta(seconds=hours) if hours else None
+
+                    await target.edit(roles=[mute_role])
+                    #await ctx.target.add_roles(role)
+
+                    embed = Embed(title = "Member Muted",
+                                    colour = message.guild.owner.colour,
+                                    timestamp = datetime.utcnow())
+
+                    embed.set_thumbnail(url = target.avatar_url)
+
+                    fields = [("Member",target.display_name,False),
+                                ("Muted By",message.author.display_name,False),
+                                ("Duration",f"{hours:,}hour(s)" if hours else "Indefinite",False),
+                                ("Reason",reason,False)]
+
+                    for name,value,inline in fields:
+                        embed.add_field(name=name,value=value,inline=inline)
+
+                    with open("./data/server_settings.json","r") as f:
+                        settings = json.load(f)
+
+                    if "logs_channel" in settings[str(message.guild.id)]:
+                        if settings[str(message.guild.id)]["logs_channel"] != "":
+                            log_channel_id = settings[str(message.guild.id)]["logs_channel"]
+                            try:
+                                channel = await self.client.fetch_channel(log_channel_id)
+                                await channel.send(embed=embed)
+                            except:
+                                pass
+
+                    if hours:
+                        unmutes.append(target)
+
+        return unmutes
+
     #Mute
     @commands.guild_only()
     @command(name = "mute")
     @bot_has_permissions(manage_roles = True)
     @has_permissions(manage_roles = True,manage_guild = True)
-    async def mute(self,ctx,targets:Greedy[Member],hours:Optional[int],*,reason:Optional[str]):
+    async def mute_command(self,ctx,targets:Greedy[Member],hours:Optional[int],*,reason:Optional[str]):
+        
         mute_role = discord.utils.get(ctx.guild.roles,name="mute")
 
         if not len(targets):
@@ -186,74 +245,16 @@ class Moderation(commands.Cog):
             embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna mute", inline=False)
             await ctx.send(embed=embed,delete_after=5)
             return
-
         else:
-
-            #Check if the mute role exisits
-            if not mute_role:
-                try:
-                    mute_role = await ctx.guild.create_role(name="mute")
-
-                    for channel in ctx.guild.channels:
-                        await channel.set_permissions(mute_role,speak=False,send_messages=False,
-                                                     read_message_history=True,read_messages=False)
-
-                except discord.Forbidden:
-                    ctx.send("There is no mute role and I'm unable to create one")
-                    return
-
-            unmutes = []
-
-            for target in targets:
-                if not mute_role in target.roles:
-                    if ctx.guild.me.top_role.position > target.top_role.position:
-                        role_ids = ",".join([str(r.id) for r in target.roles])
-                        end_time = datetime.utcnow() + timedelta(seconds=hours) if hours else None
-
-                        await target.edit(roles=[mute_role])
-                        #await ctx.target.add_roles(role)
-
-                        embed = Embed(title = "Member Muted",
-                                      colour = ctx.guild.owner.colour,
-                                      timestamp = datetime.utcnow())
-
-                        embed.set_thumbnail(url = target.avatar_url)
-
-                        fields = [("Member",target.display_name,False),
-                                  ("Muted By",ctx.author.display_name,False),
-                                  ("Duration",f"{hours:,}hour(s)" if hours else "Indefinite",False),
-                                  ("Reason",reason,False)]
-
-                        for name,value,inline in fields:
-                            embed.add_field(name=name,value=value,inline=inline)
-
-                        with open("./data/server_settings.json","r") as f:
-                            settings = json.load(f)
-
-                        if "logs_channel" in settings[str(ctx.guild.id)]:
-                            if settings[str(ctx.guild.id)]["logs_channel"] != "":
-                                log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
-                                try:
-                                    channel = await self.client.fetch_channel(log_channel_id)
-                                    await channel.send(embed=embed)
-                                except:
-                                    pass
-                            else:
-                                await ctx.send(embed=embed)
-
-                        if hours:
-                            unmutes.append(target)
-                    else:
-                        await ctx.send(f"{target.display_name} could not be muted")
-                else:
-                    await ctx.send(f"{target.display_name} is already muted")
+            unmutes = await self.mute_members(ctx.message,targets,hours,reason)
 
             if len(unmutes):
                 await asyncio.sleep(hours)
-                await self.unmute(ctx,targets)
+                await self.unmute_members(ctx.guild,targets)
 
-    async def unmute(self,ctx,targets):
-        mute_role = discord.utils.get(ctx.guild.roles,name="mute")
+    #Unmute Function
+    async def unmute_members(self,guild,targets,*,reason="Mute time expired."):
+        mute_role = discord.utils.get(guild.roles,name="mute")
         for target in targets:
             if mute_role in target.roles:
                 await target.remove_roles(mute_role)
@@ -263,12 +264,13 @@ class Moderation(commands.Cog):
     @command(name = "unmute")
     @bot_has_permissions(manage_roles = True)
     @has_permissions(manage_roles = True,manage_guild = True)
-    async def unmute_command(self,ctx,targets:Greedy[Member]):
+    async def unmute_command(self,ctx,targets:Greedy[Member],*,reason: Optional[str] = "No reason provided"):
         if not len(targets):
-            return
-
+            embed=discord.Embed()
+            embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna mute", inline=False)
+            await ctx.send(embed=embed,delete_after=5)
         else:
-            await self.unmute(ctx,targets)
+            await self.unmute(ctx.guild,targets,reason=reason)
 
     #Ban
     @commands.guild_only()

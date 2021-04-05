@@ -25,6 +25,8 @@
         "modmail_channel_id": "828103055739322380",
         "goodbye_channel": "",
         "welcome_channel": "",
-        "join_roles": []
+        "join_roles": [],
+        "time": 10,
+        "messages": 6
     }
 }
