@@ -291,4 +291,7 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-bot.run("ODIyNjI5Njk2MjI2OTgzOTM3.YFVDmw.cV9tp4alvmbTPE_z6yDEZKLKl68")
+with open("data/token.0", "r", encoding="utf-8") as f:
+    TOKEN = f.read()
+
+bot.run(f"{TOKEN}")
