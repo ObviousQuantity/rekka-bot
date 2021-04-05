@@ -8,6 +8,7 @@ from glob import glob
 from datetime import datetime
 from discord import Embed, Member
 from re import search
+from cogs import moderation
 import asyncio
 
 cogs = [path.split("\\")[-1][:-3] for path in glob("./bot/cogs/*.py")]
@@ -200,7 +201,7 @@ async def on_message(message):
 
     def check(msg):
         return (msg.author == message.author
-                and (datetime.utcnow()-msg.created_at).seconds < 10)    
+                and (datetime.utcnow()-msg.created_at).seconds < 30)    
 
     """
     url_regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
@@ -218,6 +219,11 @@ async def on_message(message):
 
         if len(list(filter(lambda m: check(m),bot.cached_messages))) >= 6: 
                await message.channel.send("Don't spam!",delete_after=5)
+               unmutes = await moderation.Moderation.mute_members(bot,message,[message.author],5,reason="Spam")
+
+               if len(unmutes):
+                   await asyncio.sleep(5)
+                   await moderation.Moderation.unmute_members(bot,ctx.guild,[message.author])
 
         if isinstance(message.channel,DMChannel):
 
@@ -282,9 +288,6 @@ async def on_message(message):
                                         except:
                                             await message.channel.send(f"{message.author.mention} your message because it contained a blacklisted word **{word}**")
                                         return
-
-                            with open("./data/server_settings.json","w") as f:
-                                json.dump(settings,f,indent=4)
 
     await bot.process_commands(message)
 

@@ -270,7 +270,7 @@ class Moderation(commands.Cog):
             embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna mute", inline=False)
             await ctx.send(embed=embed,delete_after=5)
         else:
-            await self.unmute(ctx.guild,targets,reason=reason)
+            await self.unmute_members(ctx.guild,targets,reason=reason)
 
     #Ban
     @commands.guild_only()
@@ -336,7 +336,7 @@ class Moderation(commands.Cog):
                    await ctx.guild.unban(user)
                    await ctx.send(f"Unbanned {user.mention}")
                    return
-      
+
 def setup(client):
    client.add_cog(Moderation(client))
 
