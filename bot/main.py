@@ -1,3 +1,12 @@
+"""
+Just so I don't forget how to do this
+git rm -r --cached .
+git add .
+git status
+git commit -am 'Removed files from the index (now ignored)'
+git push
+"""
+
 import discord
 import json
 import os
@@ -291,13 +300,12 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-with open("data/token.0", "r", encoding="utf-8") as f:
-    TOKEN = f.read()
-
 is_prod = os.environ.get("IS_HEROKU",None)
 if is_prod:
     print("ON HEROKU")
     bot.run(os.environ.get("TOKEN"))
 else:
     print("NOT ON HEROKU")
+    with open("data/token.0", "r", encoding="utf-8") as f:
+        TOKEN = f.read()
     bot.run(TOKEN)
