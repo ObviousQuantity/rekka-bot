@@ -14,11 +14,15 @@ class Log(Cog):
 	@Cog.listener()
 	async def on_user_update(self, before, after):
 
-		log_channel = discord.utils.get(after.guild.text_channels, name="logs")
+		for guild in self.client.guilds:
+			for member in guild.members:
+				if member.id == after.id:
+
+					log_channel = discord.utils.get(guild.text_channels, name="logs")
 
 		if before.name != after.name:
 			embed = Embed(title="Username change",
-						  colour=after.colour,
+						  colour=guild.owner.colour,
 						  timestamp=datetime.utcnow())
 
 			fields = [("Before", before.name, False),
@@ -27,7 +31,10 @@ class Log(Cog):
 			for name, value, inline in fields:
 				embed.add_field(name=name, value=value, inline=inline)
 
-			await channel.send(embed=embed)
+			if log_channel != None:
+				await log_channel.send(embed=embed)
+			else:
+				print("no log channel")
 
 		if before.discriminator != after.discriminator:
 			embed = Embed(title="Discriminator change",

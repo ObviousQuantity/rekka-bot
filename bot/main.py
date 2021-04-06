@@ -303,9 +303,4 @@ async def on_message(message):
 token = os.environ["TOKEN"]
 bot.run(token)
 
-"""
-with open("data/token.0", "r", encoding="utf-8") as f:
-    TOKEN = f.read()
 
-bot.run(TOKEN)
-"""
