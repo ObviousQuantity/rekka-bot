@@ -1,5 +1,5 @@
 # Rekka Bot
-*This is a simple bot I've created to learn python and discord.py most of the code are from tutorials mixed with some things I know*
+*This is a simple bot I've created to learn python and discord.py most of the code are from tutorials mixed with some things I know. Also I'm pretty new to Github and coding so excuse any of the cringe coding and setup I'm trying.*
 
 # Prefix: . 
 *Can be changed using the changeprefix command*
