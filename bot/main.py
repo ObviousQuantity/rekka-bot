@@ -300,12 +300,12 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-is_prod = os.environ.get("IS_HEROKU",None)
-if is_prod:
-    print("ON HEROKU")
-    bot.run(os.environ.get("TOKEN"))
-else:
-    print("NOT ON HEROKU")
-    with open("data/token.0", "r", encoding="utf-8") as f:
-        TOKEN = f.read()
-    bot.run(TOKEN)
+token = os.environ["TOKEN"]
+bot.run(token)
+
+"""
+with open("data/token.0", "r", encoding="utf-8") as f:
+    TOKEN = f.read()
+
+bot.run(TOKEN)
+"""
