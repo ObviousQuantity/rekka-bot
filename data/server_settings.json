@@ -21,12 +21,13 @@
         "prefix": ".",
         "filter": [],
         "logs_channel": "828289434058358853",
-        "modmail_channel": "",
         "modmail_channel_id": "828103055739322380",
         "goodbye_channel": "",
         "welcome_channel": "",
         "join_roles": [],
         "time": 10,
-        "messages": 6
+        "messages": 6,
+        "modmail_blacklisted": [],
+        "blacklisted_channels":  []
     }
 }
