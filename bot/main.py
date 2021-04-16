@@ -52,7 +52,7 @@ async def on_ready():
     print("Bot is in " + str(len(bot.guilds)) + " server(s)")
     print("--------------------")
    
-   bot.connection_url = os.environ["MONGO"]
+    bot.connection_url = os.environ["MONGO"]
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
     bot.db = bot.mongo["menudocs"]
     bot.config = Document(bot.db,"config")
