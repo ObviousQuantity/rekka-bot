@@ -19,6 +19,7 @@ from discord import Embed, Member
 from re import search
 from cogs import moderation
 import asyncio
+from bot.mongo import Document
 
 cogs = [path.split("\\")[-1][:-3] for path in glob("./bot/cogs/*.py")]
 
@@ -51,6 +52,14 @@ async def on_ready():
     print("Bot is in " + str(len(bot.guilds)) + " server(s)")
     print("--------------------")
    
+   bot.connection_url = os.environ["MONGO"]
+    bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
+    bot.db = bot.mongo["menudocs"]
+    bot.config = Document(bot.db,"config")
+    print("Initalized Database")
+    for document in await bot.config.get_all():
+        print(document)
+
     for cog in os.listdir("./bot/cogs"):
         if cog.endswith(".py"):
             try:
