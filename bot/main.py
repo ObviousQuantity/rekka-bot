@@ -19,6 +19,7 @@ from discord import Embed, Member
 from re import search
 from cogs import moderation
 import asyncio
+import motor.motor_asyncio
 from bot.mongo import Document
 
 cogs = [path.split("\\")[-1][:-3] for path in glob("./bot/cogs/*.py")]
