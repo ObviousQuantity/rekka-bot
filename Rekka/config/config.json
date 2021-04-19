@@ -19,7 +19,11 @@
     },
     "828109813606252575": {
         "prefix": ".",
-        "filter": [],
+        "filter": [
+            "nigga",
+            "bitch",
+            "nigger"
+        ],
         "logs_channel": "828289434058358853",
         "modmail_channel_id": "828103055739322380",
         "goodbye_channel": "",
@@ -28,6 +32,6 @@
         "time": 10,
         "messages": 6,
         "modmail_blacklisted": [],
-        "blacklisted_channels":  []
+        "blacklisted_channels": []
     }
 }

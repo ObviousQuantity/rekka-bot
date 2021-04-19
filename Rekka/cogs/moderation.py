@@ -23,17 +23,17 @@ class Moderation(commands.Cog):
                       aliases = ["aw"])
     @commands.has_permissions(manage_messages=True)
     async def addword(self,ctx,*,word):
-        with open("./data/server_settings.json","r") as f:
-            filter = json.load(f)
+        data = await self.client.config.find(ctx.guild.id)
+        if not data or "filter" not in data:
+            await self.client.config.upsert({"_id": ctx.guild.id, "filter": []})
+            data = await self.client.config.find(ctx.guild.id)
 
-        if word in filter[str(ctx.message.guild.id)]["filter"]:
+        filteredwords = data["filter"]
+        if word in filteredwords:
             await ctx.send(f"**{word}** is already in the filter")
         else:
-            filter[str(ctx.message.guild.id)]["filter"].append(word)
-            await ctx.send(f"Added **{word}** to the swear filter")
-
-        with open("./data/server_settings.json","w") as f:
-            json.dump(filter,f,indent=4)
+            filteredwords.append(word)
+            await self.client.config.upsert({"_id": ctx.guild.id, "filter": filteredwords})
 
     #Remove words from the filter
     @commands.guild_only()
@@ -42,17 +42,17 @@ class Moderation(commands.Cog):
                       brief = "remove a word from the filter",
                       aliases = ["rw"])
     async def removeword(self,ctx,*,word):
-        with open("./data/server_settings.json","r") as f:
-            filter = json.load(f)
+        data = await self.client.config.find(ctx.guild.id)
+        if not data or "filter" not in data:
+            await self.client.config.upsert({"_id": ctx.guild.id, "filter": []})
+            data = await self.client.config.find(ctx.guild.id)
 
-        if word not in filter[str(ctx.message.guild.id)]["filter"]:
+        filteredwords = data["filter"]
+        if word not in filteredwords:
             await ctx.send(f"**{word}** is not in the filter")
         else:
-            filter[str(ctx.message.guild.id)]["filter"].remove(word)
-            await ctx.send(f"Removed **{word}** from the swear filter")
-
-        with open("./data/server_settings.json","w") as f:
-            json.dump(filter,f,indent=4)
+            filteredwords.remove(word)
+            await self.client.config.upsert({"_id": ctx.guild.id, "filter": filteredwords})        
 
     #View Filter
     @commands.guild_only()
@@ -61,17 +61,14 @@ class Moderation(commands.Cog):
                       brief = "view the words being filtered",
                       aliases = ["filter","f","vf"])
     async def viewfilter(self,ctx):
-
-        with open("./data/server_settings.json","r") as f:
-            filter = json.load(f)
-
-        FilteredWords = filter[str(ctx.message.guild.id)]["filter"]
+        data = await self.client.config.find(ctx.guild.id)
+        filteredwords = data["filter"]
 
         try:
             embed = Embed(title = "Filter",
-                          colour = ctx.member.colour)
+                            colour = 0x3498DB)
 
-            fields  = [("Current Words Being Filtered",'\n'.join(FilteredWords),False)]
+            fields  = [("Current Words Being Filtered",'\n'.join(filteredwords),False)]
 
             for name,value,inline in fields:
                 embed.add_field(name = name, value = value, inline = inline)
@@ -81,9 +78,6 @@ class Moderation(commands.Cog):
                 embed=discord.Embed()
                 embed.add_field(name="❌ Couldn't Get Filter", value=f"something went wrong or the list is empty. Use the **addword** command to filter a word", inline=False)
                 await ctx.send(embed=embed)
-
-        with open("./data/server_settings.json","w") as f:
-            json.dump(filter,f,indent=4)
 
     #Clear/Purge
     @commands.guild_only()

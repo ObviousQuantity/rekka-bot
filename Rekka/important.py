@@ -1,81 +1,3 @@
-"""
-Just so I don't forget how to do this
-git rm -r --cached .
-git add .
-git status
-git commit -am 'Removed files from the index (now ignored)'
-git push
-"""
-
-import discord
-import json
-import os
-from discord.ext import commands, tasks
-from discord import Intents, DMChannel
-from random import choice
-from glob import glob
-from datetime import datetime
-from discord import Embed, Member
-from re import search
-from cogs import moderation
-import asyncio
-
-cogs = [path.split("\\")[-1][:-3] for path in glob("./bot/cogs/*.py")]
-
-def get_prefix(bot,message):
-
-    if not isinstance(message.channel,DMChannel):
-        with open("./data/server_settings.json","r") as f:
-            settings = json.load(f)
-
-            if settings[str(message.guild.id)]:
-                return settings[str(message.guild.id)]["prefix"]
-            else:
-                return "."
-    else:
-        return "."
-
-intents = discord.Intents.default()
-intents.members = True
-intents.reactions = True
-intents.messages = True
-intents.guilds = True
-bot = commands.Bot(command_prefix=get_prefix,intents=intents)
-
-#Runs when the bot comes online
-@bot.event
-async def on_ready():
-
-    print("--------------------")
-    print('We have logged in as {0.user}'.format(bot))
-    print("Bot is in " + str(len(bot.guilds)) + " server(s)")
-    print("--------------------")
-
-    print("Initalized Database")
-    for document in await bot.config.get_all():
-        print(document)
-
-    for cog in os.listdir("./bot/cogs"):
-        if cog.endswith(".py"):
-            try:
-                bot.load_extension(f"cogs.{cog[:-3]}")
-                print(f" {cog} Loaded")
-            except:
-                print(f"Failed to load {cog}")
-
-    #Statuses
-    # Setting `Playing ` status
-    await bot.change_presence(activity=discord.Game(name="Message me for modmail!"))
-
-    # Setting `Streaming ` status
-    #await bot.change_presence(activity=discord.Streaming(name="My Stream", url="https://www.twitch.tv/jardius"))
-
-    # Setting `Listening ` status
-    # await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="a song"))
-
-    # Setting `Watching ` status
-    #await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="a movie"))
-
 @bot.event
 async def on_guild_join(guild):
     print("Rekka Joined A Server")
@@ -83,10 +5,9 @@ async def on_guild_join(guild):
     channels = guild.text_channels
 
     #Pick a random channel to send thank you message
-    if channels == 0:
-        await guild.owner.send("You don't have any channels")
-    else:
-       await choice(channels).send("Thanks for inviting me")
+    if not channels == 0:
+        await choice(channels).send("Thanks for inviting me")
+
 
     with open("./data/server_settings.json","r") as f:
         settings = json.load(f)
@@ -140,15 +61,15 @@ async def on_member_join(member):
         #Then randomly select a welcome message from the list to send
         if "welcome_channel" in settings[server_id]:
             if settings[server_id]["welcome_channel"] != "":
-                welcome_channel = int(settings[server_id]["welcome_channel"])
+                #welcome_channel = int(settings[server_id]["welcome_channel"])
 
                 if "welcome_message" in settings[server_id]:
-                    if len(settings[guild.id]["welcome_message"]) != 0:
-                        welcome__message = choice(settings[guild.id]["welcome_message"])
+                    if len(settings[server_id ]["welcome_message"]) != 0:
+                        welcome__message = choice(settings[server_id]["welcome_message"])
                         await bot.get_channel(server_id).send(f"{welcome__message}")
                 else:
                     print("Server doesn't have welcome_message in settings json")
-                    settings[guild.id]["welcome_message"] = []
+                    settings[server_id ]["welcome_message"] = []
         else:
             print("Server doesn't have welcome_channel in settings json")
             settings[server_id]["welcome_channel"] = ""
@@ -183,7 +104,7 @@ async def on_member_remove(member):
         with open("./data/server_settings.json","r") as f:
             settings = json.load(f)
 
-        #Welcome Message
+        #Goodbye Message
         #Check if welcome_channel is in the setting json for the server
         #Then check if it doesn't equal ""
         #Then check if welcome_message is in the setting json for the server
@@ -191,11 +112,11 @@ async def on_member_remove(member):
         #Then randomly select a welcome message from the list to send
         if "goodbye_channel" in settings[server_id]:
             if settings[server_id]["goodbye_channel"] != "":
-                welcome_channel = int(settings[server_id]["goodbye_channel"])
+                #welcome_channel = int(settings[server_id]["goodbye_channel"])
 
                 if "goodbye_message" in settings[server_id]:
-                    if len(settings[guild.id]["goodbye_message"]) != 0:
-                        goodbye_message = choice(settings[guild.id]["goodbye_message"])
+                    if len(settings[server_id]["goodbye_message"]) != 0:
+                        goodbye_message = choice(settings[server_id]["goodbye_message"])
                         await bot.get_channel(server_id).send(f"{goodbye_message}")
                 else:
                     print("Server doesn't goodbye_message in settings json")
@@ -303,8 +224,3 @@ async def on_message(message):
                                         return
 
     await bot.process_commands(message)
-
-token = os.environ["TOKEN"]
-bot.run(token)
-
-

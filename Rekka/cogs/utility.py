@@ -104,17 +104,7 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def changeprefix(self,ctx,prefix):
-        with open("./data/server_settings.json","r") as f:
-            prefixes = json.load(f)
-            print(prefixes)
-
-        print(prefixes[str(ctx.guild.id)]["prefix"])
-        prefixes[str(ctx.guild.id)]["prefix"] = prefix
-    
-        with open("./data/server_settings.json","w") as f:
-            json.dump(prefixes,f,indent=4)
-
-        await ctx.send(f"Prefix changed to: {prefix}")
+        await self.client.config.upsert({"_id": ctx.guild.id, "prefix": prefix})
 
     @commands.command()
     async def passwordgenerator(self,ctx):
