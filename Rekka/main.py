@@ -70,8 +70,8 @@ bot = commands.Bot(
 )
 bot.default_prefix = default_prefix
 bot.token = secret_file["token"]
-#bot.connection_url = os.environ["MONGO"] #Use when running on Heroku
-bot.connection_url = secret_file["mongo"]
+bot.connection_url = os.environ["MONGO"] #Use when running on Heroku
+#bot.connection_url = secret_file["mongo"]
 
 bot.colors = {
     "WHITE": 0xFFFFFF,
@@ -261,5 +261,5 @@ if __name__ == "__main__":
     bot.db = bot.mongo["dbName"]
     bot.config = Document(bot.db, "collectionName")
     print("Database Initalized")
-    #bot.run(os.environ["TOKEN"]) #Use when running on Heroku
-    bot.run(bot.token)
+    bot.run(os.environ["TOKEN"]) #Use when running on Heroku
+    #bot.run(bot.token)
