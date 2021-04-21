@@ -11,8 +11,8 @@ def get_path():
     """
     cwd = Path(__file__).parents[1]
     cwd = str(cwd)
-    print(f"{cwd}\n-----------------------------")
     return cwd
+    #print(f"{cwd}\n-----------------------------")
 
 
 def read_json(filename):
