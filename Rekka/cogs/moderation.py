@@ -16,6 +16,16 @@ class Moderation(commands.Cog):
     def __init__(self,client):
         self.client = client
 
+    #Gets The Log Channel From MongoDB
+    async def get_log_channel(self,guild_id):
+        data = await self.client.config.find(guild_id)
+        if not data or "log_channel_id" not in data:
+            print("No Log Channel")
+            return False
+        else:
+            print("Log Channel")
+            return data["log_channel_id"] #Returns the channel id
+
     #Add words to the filter
     @commands.guild_only()
     @commands.command(name = "addword",
@@ -150,24 +160,18 @@ class Moderation(commands.Cog):
                     for name,value,inline in fields:
                         embed.add_field(name = name, value = value, inline = inline)
                     
-                    with open("./data/server_settings.json","r") as f:
-                        settings = json.load(f)
-                    
-                    if "logs_channel" in settings[str(ctx.guild.id)]:
-                        if settings[str(ctx.guild.id)]["logs_channel"] != "":
-                            log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
-                            try:
-                                channel = await self.client.fetch_channel(log_channel_id)
-                                await channel.send(embed=embed)
-                            except:
-                                pass
-                        else:
-                            await ctx.send(embed=embed)
+                    #Get The Log Channel To Send A Message
+                    log_channel_id = await self.get_log_channel(ctx.guild.id)
+                    if log_channel_id != False:
+                        log_channel = await self.client.fetch_channel(log_channel_id)
+                        await log_channel.send(embed=embed)
+                    else:
+                        await ctx.send(embed=embed)
 
                 else:
                     await ctx.send(f"{target.display_name} could not be kicked")
 
-    #Mute Functions
+    #Mute Function
     async def mute_members(self,message,targets,hours,reason):
 
         mute_role = discord.utils.get(message.guild.roles,name="mute")
@@ -208,17 +212,13 @@ class Moderation(commands.Cog):
                     for name,value,inline in fields:
                         embed.add_field(name=name,value=value,inline=inline)
 
-                    with open("./data/server_settings.json","r") as f:
-                        settings = json.load(f)
-
-                    if "logs_channel" in settings[str(message.guild.id)]:
-                        if settings[str(message.guild.id)]["logs_channel"] != "":
-                            log_channel_id = settings[str(message.guild.id)]["logs_channel"]
-                            try:
-                                channel = await self.client.fetch_channel(log_channel_id)
-                                await channel.send(embed=embed)
-                            except:
-                                pass
+                    #Get The Log Channel To Send A Message
+                    log_channel_id = await self.get_log_channel(message.guild.id)
+                    if log_channel_id != False:
+                        log_channel = await self.client.fetch_channel(log_channel_id)
+                        await log_channel.send(embed=embed)
+                    else:
+                        await message.channel.send(embed=embed)
 
                     if hours:
                         unmutes.append(target)
@@ -232,7 +232,7 @@ class Moderation(commands.Cog):
     @has_permissions(manage_roles = True,manage_guild = True)
     async def mute_command(self,ctx,targets:Greedy[Member],hours:Optional[int],*,reason:Optional[str]):
         
-        mute_role = discord.utils.get(ctx.guild.roles,name="mute")
+        #mute_role = discord.utils.get(ctx.guild.roles,name="mute")
 
         if not len(targets):
             embed=discord.Embed()
@@ -298,19 +298,13 @@ class Moderation(commands.Cog):
                     for name,value,inline in fields:
                         embed.add_field(name = name, value = value, inline = inline)
 
-                    with open("./data/server_settings.json","r") as f:
-                        settings = json.load(f)
-                    
-                    if "logs_channel" in settings[str(ctx.guild.id)]:
-                        if settings[str(ctx.guild.id)]["logs_channel"] != "":
-                            log_channel_id = settings[str(ctx.guild.id)]["logs_channel"]
-                            try:
-                                channel = await self.client.fetch_channel(log_channel_id)
-                                await channel.send(embed=embed)
-                            except:
-                                pass
-                        else:
-                            await ctx.send(embed=embed)
+                    #Get The Log Channel To Send A Message
+                    log_channel_id = await self.get_log_channel(ctx.guild.id)
+                    if log_channel_id != False:
+                        log_channel = await self.client.fetch_channel(log_channel_id)
+                        await log_channel.send(embed=embed)
+                    else:
+                        await ctx.send(embed=embed)
 
                 else:
                     await ctx.send(f"{target.display_name} could not be banned")
