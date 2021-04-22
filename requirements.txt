@@ -9,3 +9,4 @@ praw==7.2.0
 python-dotenv==0.15.0
 ffmpeg==1.4
 motor==2.4.0
+dnspython==2.1.0
