@@ -69,7 +69,7 @@ bot = commands.Bot(
     intents = intents,
 )
 bot.default_prefix = default_prefix
-bot.token = secret_file["token"]
+#bot.token = secret_file["token"]
 bot.connection_url = os.environ["MONGO"] #Use when running on Heroku
 #bot.connection_url = secret_file["mongo"]
 
