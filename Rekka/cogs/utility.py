@@ -101,6 +101,7 @@ class Utility(commands.Cog):
     async def unload(self,ctx,extension):
         self.client.unload_extension(f"cogs.{extension}")
 
+    #Change Prefix
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def changeprefix(self,ctx,prefix):
@@ -133,7 +134,7 @@ class Utility(commands.Cog):
                 password = password + password_char
             await ctx.author.send("Your password: " + password)
 
-    #Setup Modmail
+    #Setup Modmail Channel
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     @commands.command(name = "",
@@ -143,37 +144,30 @@ class Utility(commands.Cog):
                       aliases = ["setupmm"])
     async def setupmodmail(self,ctx):
 
-        server_id = ctx.message.guild.id
+        guild_id = ctx.message.guild.id
+        data = await self.client.config.find(guild_id)
 
-        json_file = open("./data/server_settings.json").read()
-        servers = json.loads(json_file)
-
-        try:
-            current_modmail_channel = await self.client.fetch_channel(int(servers[str(server_id)]["modmail_channel_id"]))
-            await ctx.send("You already have a modmail channel setup")
-            return
-        except:
+        async def create_channel():
             try:
-                if discord.utils.get(ctx.guild.channels,name="modmail"):
-                    channel = discord.utils.get(self.client.channels,name="modmail")
-                    channel_id = channel.id
-                    servers[str(server_id)]["modmail_channel_id"] = str(channel_id)
-                else:
-                    modmail_channel = await ctx.message.guild.create_text_channel("modmail")
-                    servers[str(server_id)]["modmail_channel_id"] = str(modmail_channel.id)
-            except discord.Forbidden:
-                await ctx.send("Missing Permissions to create channels!")
-                ctx.send("Missing Permissions to create channels!")
-                return
+                modmail_channel = await ctx.message.guild.create_text_channel("modmail")
+                await self.client.config.upsert({"_id": guild_id, "modmail_channel_id": modmail_channel.id})
+                await modmail_channel.send("You will receive modmail here when users messaage me")
+            except:
+                print("Couldn't create channel")
 
+        if not data or "modmail_channel_id" not in data:
+            #Setup a new channel because they likely don't have one at least not one for this bot
+            await create_channel()
+        else:
+            #They do have data and a mod mail channel id 
+            #So check if the current id still exisits if not create a new one
+            try:
+                if await self.client.fetch_channel(data["modmail_channel_id"]):
+                   await ctx.send("You already have a modmail channel setup")                 
+            except:
+                await create_channel()
 
-        with open("./data/server_settings.json","w") as f:
-            json.dump(servers,f,indent=4)
-
-        await ctx.send("Successfully created a modmail channel")
-        await modmail_channel.send("You will receive modmail here when users messaage me")
-
-    #Setup Log
+    #Setup Log Channel
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     @commands.command(name = "",
@@ -182,35 +176,25 @@ class Utility(commands.Cog):
                       aliases = ["sl"])
     async def setuplogs(self,ctx):
 
-        server_id = ctx.message.guild.id
+        guild_id = ctx.message.guild.id
+        data = await self.client.config.find(guild_id)
 
-        json_file = open("./data/server_settings.json").read()
-        servers = json.loads(json_file)
-
-        try:
-            current_logs_channel = await self.client.fetch_channel(int(servers[str(server_id)]["logs_channel"]))
-            await ctx.send("You already have a log channel setup")
-            return
-        except:
+        async def create_channel():
             try:
-                if discord.utils.get(ctx.guild.channels,name="logs"):
-                    channel = discord.utils.get(self.client.channels,name="logs")
-                    channel_id = channel.id
-                    servers[str(server_id)]["modmail_channel_id"] = str(channel_id)
-                else:
-                    logs_channel = await ctx.message.guild.create_text_channel("logs")
-                    servers[str(server_id)]["logs_channel"] = str(logs_channel.id)
+                log_channel = await ctx.message.guild.create_text_channel("logs")
+                await self.client.config.upsert({"_id": guild_id, "log_channel_id": log_channel.id})
+                await log_channel.send("Everything will be logged here")
             except discord.Forbidden:
-                await ctx.send("Missing Permissions to create channels!")
-                ctx.send("Missing Permissions to create channels!")
-                return
+                print("Couldn't create channel")
 
-
-        with open("./data/server_settings.json","w") as f:
-            json.dump(servers,f,indent=4)
-
-        await ctx.send("Successfully created a log channel")
-        await logs_channel.send("Everything will be logged in this channel")
+        if not data or "log_channel_id" not in data:
+            await create_channel()
+        else:
+            try:
+                if await self.client.fetch_channel(data["log_channel_id"]):
+                   await ctx.send("You already have a log channel setup")                 
+            except:
+                await create_channel()
 
     #Give Role
     @commands.guild_only()
