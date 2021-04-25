@@ -10,6 +10,7 @@ from discord.ext.commands import Cog, Greedy
 from datetime import datetime,timedelta
 from discord import Embed, Member
 import json
+from utils.util import Pag
 
 class Moderation(commands.Cog):
 
@@ -324,6 +325,73 @@ class Moderation(commands.Cog):
                    await ctx.guild.unban(user)
                    await ctx.send(f"Unbanned {user.mention}")
                    return
+
+    #Warning
+    @commands.command()
+    @commands.guild_only()
+    #@cinnabds.has_role(roleid)
+    async def warn(self,ctx,member:discord.Member,*,reason):
+        # if member.id in [ctx.author.id, self.bot.user.id]:
+        #     return await ctx.send("You cannot warn yourself or the bot")
+
+        #How many warns they have
+        current_warn_count = len(
+            await self.client.warns.find_many_by_custom(
+                {
+                    "user_id": member.id, 
+                    "guild_id": member.guild.id
+                }
+            )
+        ) + 1
+
+        warn_filter = {"user_id": member.id, "guild_id": member.guild.id, "number": current_warn_count}
+        warn_data = {"reason": reason, "timestamp": ctx.message.created_at, "warned_by": ctx.author.id}
+
+        await self.client.warns.upsert_custom(warn_filter,warn_data)
+
+        embed = discord.Embed(
+            title = "You've been warned!",
+            description = f"__**Reason**__\n{reason}",
+            colour = discord.Colour.red(),
+            timestamp = ctx.message.created_at,
+        )
+        embed.set_author(name = ctx.guild.name, icon_url = ctx.guild.icon_url)
+        embed.set_footer(text = f"Warns: {current_warn_count}")
+
+        try:
+            await member.send(embed=embed)
+            await ctx.send("Warned that userin dm's")
+        except discord.HTTPException:
+            await ctx.send(member.mention,embed=embed)
+
+    #Show Warns
+    @commands.command()
+    @commands.guild_only()
+    async def warns(self, ctx, member:discord.Member):
+        warn_filter = {"user_id": member.id, "guild_id": member.guild.id}
+        warns = await self.client.warns.find_many_by_custom(warn_filter)
+
+        if not bool(warns):
+            return await ctx.send(f"Couldn't find any warns for {member.display_name}")
+
+        warns = sorted(warns,key=lambda x: x["number"])
+
+        pages = []
+        for warn in warns:
+            description = f"""
+            Warn Number: `{warn['number']}`
+            Warn Reason: `{warn['reason']}`
+            Warned By: <@{warn['warned_by']}>
+            Warn Number: {warn['timestamp'].strftime("%I:%M %p %B %d, %Y")}
+            """
+            pages.append(description)
+
+        await Pag(
+            title=f"Warns for `{member.display_name}`",
+            colour=0xCE2029,
+            entries=pages,
+            length=1
+        ).start(ctx)
 
 def setup(client):
    client.add_cog(Moderation(client))

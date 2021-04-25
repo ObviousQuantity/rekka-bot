@@ -69,7 +69,7 @@ bot = commands.Bot(
     intents = intents,
 )
 bot.default_prefix = default_prefix
-#bot.token = secret_file["token"]
+bot.token = secret_file["token"]
 bot.connection_url = os.environ["MONGO"] #Use when running on Heroku
 #bot.connection_url = secret_file["mongo"]
 
@@ -260,6 +260,9 @@ if __name__ == "__main__":
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
     bot.db = bot.mongo["dbName"]
     bot.config = Document(bot.db, "collectionName")
+    bot.mutes = Document(bot.db, "mutes")
+    bot.warns = Document(bot.db, "warns")
+    bot.invites = Document(bot.db, "invites")
     print("Database Initalized")
     bot.run(os.environ["TOKEN"]) #Use when running on Heroku
     #bot.run(bot.token)
