@@ -69,9 +69,11 @@ bot = commands.Bot(
     intents = intents,
 )
 bot.default_prefix = default_prefix
-bot.token = secret_file["token"]
+#bot.token = secret_file["token"]
 bot.connection_url = os.environ["MONGO"] #Use when running on Heroku
 #bot.connection_url = secret_file["mongo"]
+
+bot.muted_users = {}
 
 bot.colors = {
     "WHITE": 0xFFFFFF,
@@ -104,7 +106,7 @@ async def on_ready():
     print("Bot is in " + str(len(bot.guilds)) + " server(s)")
     print("--------------------")
 
-    await bot.change_presence(activity=discord.Game(name="Test"))
+    await bot.change_presence(activity=discord.Game(name="Message me for modmail"))
     """Other Statuses
     await bot.change_presence(activity=discord.Streaming(name="My Stream", url="https://www.twitch.tv/jardius"))
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="a song"))
@@ -119,6 +121,11 @@ async def on_ready():
     for guild in bot.guilds:
         if not await bot.config.find(guild.id):
             await bot.config.upsert({"_id": guild.id})
+
+    current_mutes = await bot.mutes.get_all()
+    for mute in current_mutes:
+        bot.muted_users[mute["_id"]] = mute
+    print(bot.muted_users)
     """
     for document in await bot.config.get_all():
         print(document)
@@ -163,7 +170,8 @@ async def on_guild_join(guild):
 
     #Pick a random channel to send thank you message
     if not channels == 0:
-        await choice(channels).send("Thanks for inviting me")
+        channel = choice(channels)
+        await channel.send(f"Thanks for adding me me!\n My prefix is {default_prefix} however you can change it with {default_prefix}changeprefix\n Do {default_prefix}help for a list of commands")
 
 @bot.event
 async def on_message(message):
@@ -189,7 +197,9 @@ async def on_message(message):
         if isinstance(message.channel,DMChannel):
             #MODMAIL
             guild_id = message.content.split()[0] #this gets the guild id the user specified and saves it in a variable
+            print(guild_id)
             question = message.content.split(guild_id)[1] #the question/message
+            print(question)
             if not guild_id or not question:
                 embed = Embed(title = "Modmail",
                 colour = bot.colors.get("BLUE"),
@@ -201,7 +211,7 @@ async def on_message(message):
                 await ctx.send(embed=embed)
                 return
 
-            if await bot.config.find(int(guild_id)):
+            try:
                 data = await bot.config.find(int(guild_id))
                 if data and "modmail_channel_id" in data:
                     modmail_channel_id = data["modmail_channel_id"]
@@ -222,8 +232,10 @@ async def on_message(message):
                     await modmail_channel.send(embed=embed)
     
                     #finally we're going to notify the user that his request has been successfully recieved
-                    await message.channel.send(f"Message successfully sent to `{guild_id}`!")
-            else:
+                    await message.channel.send(f"Message successfully sent to `{guild_id}`")
+                else: #No data or at least hasn't setup the modmail channel
+                  await message.channel.send(f"`{guild_id}` doesn't have modmail setup")  
+            except: #something went wrong either it couldn't get the data or the guild_id is invalid etc
                 await message.channel.send(f"Couldn't send message")
         else:
             #ANTI-SPAM
@@ -254,7 +266,6 @@ async def on_message(message):
                                 await message.channel.send(f"{message.author.mention} your message was deleted because it contained a blacklisted word **{word}**")
 
     await bot.process_commands(message)
-
 
 if __name__ == "__main__":
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))

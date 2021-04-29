@@ -11,11 +11,36 @@ from datetime import datetime,timedelta
 from discord import Embed, Member
 import json
 from utils.util import Pag
+from copy import deepcopy
+from dateutil.relativedelta import relativedelta
 
 class Moderation(commands.Cog):
 
     def __init__(self,client):
         self.client = client
+        self.mute_task = self.check_current_mutes.start()
+
+    def cog_unload(self):
+        self.mute_task.cancel()
+
+    @tasks.loop(minutes=5)
+    async def check_current_mutes(self):
+        currentTime = datetime.now()
+        mutes = deepcopy(self.client.muted_users)
+        for key, value in mutes.items():
+            if value["muteDuration"] is None:
+                continue
+
+            unmuteTime = value["mutedAt"] + relativedelta(seconds=value["muteDuration"])
+
+            if currentTime >= unmuteTime:
+                guild = self.client.get_guild(value["guildId"])
+                member = guild.get_member(value["_id"])
+                await self.unmute_members(guild,[member])
+
+    @check_current_mutes.before_loop
+    async def before_check_current_mutes(self):
+        await self.client.wait_until_ready()
 
     #Gets The Log Channel From MongoDB
     async def get_log_channel(self,guild_id):
@@ -24,6 +49,7 @@ class Moderation(commands.Cog):
             print("No Log Channel")
             return False
         else:
+            #Should probably check if the channel exisits
             print("Log Channel")
             return data["log_channel_id"] #Returns the channel id
 
@@ -173,7 +199,7 @@ class Moderation(commands.Cog):
                     await ctx.send(f"{target.display_name} could not be kicked")
 
     #Mute Function
-    async def mute_members(self,message,targets,hours,reason):
+    async def mute_members(self,ctx,message,targets,hours,reason):
 
         mute_role = discord.utils.get(message.guild.roles,name="mute")
         #Check if the mute role exisits
@@ -193,8 +219,19 @@ class Moderation(commands.Cog):
         for target in targets:
             if not mute_role in target.roles:
                 if message.guild.me.top_role.position > target.top_role.position:
-                    role_ids = ",".join([str(r.id) for r in target.roles])
-                    end_time = datetime.utcnow() + timedelta(seconds=hours) if hours else None
+
+                    data = {
+                        "_id": target.id,
+                        "mutedAt": datetime.now(),
+                        "muteDuration": hours or None,
+                        "mutedBy": ctx.author.id,
+                        "guildId": ctx.guild.id,
+                    }
+                    await self.client.mutes.upsert(data)
+                    self.client.muted_users[target.id] = data
+
+                    #role_ids = ",".join([str(r.id) for r in target.roles])
+                    #end_time = datetime.utcnow() + timedelta(seconds=hours) if hours else None
 
                     await target.edit(roles=[mute_role])
                     #await ctx.target.add_roles(role)
@@ -216,10 +253,11 @@ class Moderation(commands.Cog):
                     #Get The Log Channel To Send A Message
                     log_channel_id = await self.get_log_channel(message.guild.id)
                     if log_channel_id != False:
-                        log_channel = await self.client.fetch_channel(log_channel_id)
-                        await log_channel.send(embed=embed)
-                    else:
-                        await message.channel.send(embed=embed)
+                        try:
+                            log_channel = await self.client.fetch_channel(log_channel_id)
+                            await log_channel.send(embed=embed)
+                        except:
+                            pass
 
                     if hours:
                         unmutes.append(target)
@@ -233,15 +271,13 @@ class Moderation(commands.Cog):
     @has_permissions(manage_roles = True,manage_guild = True)
     async def mute_command(self,ctx,targets:Greedy[Member],hours:Optional[int],*,reason:Optional[str]):
         
-        #mute_role = discord.utils.get(ctx.guild.roles,name="mute")
-
         if not len(targets):
             embed=discord.Embed()
             embed.add_field(name="❌ Missing Targets", value=f"please mention the people you wanna mute", inline=False)
             await ctx.send(embed=embed,delete_after=5)
             return
         else:
-            unmutes = await self.mute_members(ctx.message,targets,hours,reason)
+            unmutes = await self.mute_members(ctx,ctx.message,targets,hours,reason)
 
             if len(unmutes):
                 await asyncio.sleep(hours)
@@ -253,6 +289,12 @@ class Moderation(commands.Cog):
         for target in targets:
             if mute_role in target.roles:
                 await target.remove_roles(mute_role)
+            
+            await self.client.mutes.delete(target.id)
+            try:
+                self.client.muted_users.pop(target.id)
+            except KeyError:
+                pass
 
     #Unmute
     @commands.guild_only()
